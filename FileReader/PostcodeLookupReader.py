@@ -16,7 +16,7 @@ class PostcodeLookupReader(FileReader):
         outer_postcode = row['Postcode 3'].split(' ')[0]
         region = row['Region Name']
 
-        if region is not '':
+        if region and region is not '':
             self.__postcode_to_region_lookup[outer_postcode] = region
             if region not in self.__regions:
                 self.__regions.append(region)

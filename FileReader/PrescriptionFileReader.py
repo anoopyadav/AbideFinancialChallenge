@@ -44,9 +44,9 @@ class PrescriptionFileReader(FileReader):
     """ Q2. Increment the location count and total cost of matching prescription
     """
     def __calculate_average_cost(self, row):
-        if 'Peppermint Oil' in row[self.column_to_index['BNF NAME']]:
+        if 'Peppermint Oil' in row[self.get_column_index('BNF NAME')]:
             self.__prescription_location_count += 1
-            self.__prescription_total_cost += float(row[self.column_to_index['ACT COST']])
+            self.__prescription_total_cost += float(row[self.get_column_index('ACT COST')])
 
     def get_average_cost_of_prescription(self):
         if self.__prescription_location_count is 0 or self.__prescription_total_cost is 0.0:
@@ -57,10 +57,10 @@ class PrescriptionFileReader(FileReader):
     """ Q3. Populate a dictionary with postcodes as keys and total actual spend as values
     """
     def __update_actual_spend_by_post_code(self, row):
-        practice_postcode = self.__postcode_lookup_method(row[self.column_to_index['PRACTICE']])
+        practice_postcode = self.__postcode_lookup_method(row[self.get_column_index('PRACTICE')])
         if practice_postcode is not None:
             self.__post_codes_by_actual_spend.setdefault(practice_postcode, 0.0)
-            self.__post_codes_by_actual_spend[practice_postcode] += float(row[self.column_to_index['ACT COST']])
+            self.__post_codes_by_actual_spend[practice_postcode] += float(row[self.get_column_index('ACT COST')])
 
     def set_practice_code_to_postcode_lookup(self, lookup_method):
         self.__postcode_lookup_method = lookup_method
@@ -80,12 +80,12 @@ class PrescriptionFileReader(FileReader):
         if self.__prescription_regex.search(row[self.get_column_index('BNF NAME')]) is None:
             return
 
-        postcode = self.__postcode_lookup_method(row[self.column_to_index['PRACTICE']])
+        postcode = self.__postcode_lookup_method(row[self.get_column_index('PRACTICE')])
         if postcode is not None:
             region = self.__region_lookup_method(postcode)
 
             self.__average_price_per_region[region] += \
-                float(row[self.column_to_index['ACT COST']]) / float(row[self.column_to_index['ITEMS']])
+                float(row[self.get_column_index('ACT COST')]) / float(row[self.get_column_index('ITEMS')])
 
             self.__prescription_count_by_region[region] += 1
 
@@ -131,7 +131,7 @@ class PrescriptionFileReader(FileReader):
         if prescription_name not in self.__antidepressant_prescriptions:
             return
 
-        postcode = self.__postcode_lookup_method(row[self.column_to_index['PRACTICE']])
+        postcode = self.__postcode_lookup_method(row[self.get_column_index('PRACTICE')])
         if postcode is not None:
             region = self.__region_lookup_method(postcode)
 

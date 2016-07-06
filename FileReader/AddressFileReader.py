@@ -24,18 +24,18 @@ class AddressFileReader(FileReader):
     def __count_locations(self, row):
         location_regex = re.compile(r'^' + self.__location_to_search + '\s*$')
 
-        if row[self.column_to_index['town']] and location_regex.search(row[self.column_to_index['town']]) is not None:
+        if row[self.get_column_index('town')] and location_regex.search(row[self.get_column_index('town')]) is not None:
             self.__location_count += 1
-        elif row[self.column_to_index['locality']] \
-                and location_regex.search(row[self.column_to_index['locality']]) is not None:
+        elif row[self.get_column_index('locality')] \
+                and location_regex.search(row[self.get_column_index('locality')]) is not None:
             self.__location_count += 1
-        elif row[self.column_to_index['address']] \
-                and location_regex.search(row[self.column_to_index['address']]) is not None:
+        elif row[self.get_column_index('address')] \
+                and location_regex.search(row[self.get_column_index('address')]) is not None:
             self.__location_count += 1
 
     def __populate_practice_code_to_postcode(self, row):
-        self.__practice_code_to_postcode[row[self.column_to_index['practice_code']]]\
-            = row[self.column_to_index['postcode']]
+        self.__practice_code_to_postcode[row[self.get_column_index('practice_code')]]\
+            = row[self.get_column_index('postcode')]
 
     def get_postcode_for_practice(self, practice_code):
         if len(self.__practice_code_to_postcode) == 0:
