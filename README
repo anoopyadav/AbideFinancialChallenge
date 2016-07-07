@@ -1,0 +1,7 @@
+README
+
+Analyse NHS data to answer specific questions
+
+** USAGE **
+Usage: python3 main.py -c <Postcode_File_Name> -a <Address_File_Name> -p <Prescription_file_name>'
+The file names should be fully qualified paths if not in current directory.
