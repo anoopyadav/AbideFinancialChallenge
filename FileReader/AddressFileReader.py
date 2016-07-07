@@ -14,7 +14,10 @@ class AddressFileReader(FileReader):
         self.__location_to_search = location_to_search
 
     def process_file(self, row):
-        self.__populate_practice_code_to_postcode(row)
+        if len(row) is not len(self.get_csv_header()):
+            return
+        else:
+            self.__populate_practice_code_to_postcode(row)
 
         if self.__location_to_search is None:
             return
@@ -40,11 +43,13 @@ class AddressFileReader(FileReader):
     def get_postcode_for_practice(self, practice_code):
         if len(self.__practice_code_to_postcode) == 0:
             raise ValueError('practice_code_to_postcode dictionary is not initialised!')
-
         return self.__practice_code_to_postcode.get(practice_code, None)
 
     def get_location_count(self):
         return self.__location_count
+
+    def get_practice_code_to_postcode_count(self):
+        return len(self.__practice_code_to_postcode)
 
     def write_output_to_file(self):
         pass

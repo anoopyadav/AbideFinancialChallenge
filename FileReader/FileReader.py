@@ -22,7 +22,7 @@ class FileReader(metaclass=ABCMeta):
                                     'lazy_sequential_read': self.__lazy_sequential_read}
         self.__iteration_method = None
         self.__header = header
-        self.__column_to_index = None
+        self.column_to_index = None
         self.__line_width = 0
         self.__output_file = 'output.txt'
 
@@ -61,17 +61,17 @@ class FileReader(metaclass=ABCMeta):
         if header is None:
             with open(self.__filename, "rt") as f:
                 column_list = [h.strip() for h in f.__next__().split(',')]
-                self.__column_to_index = dict(zip(column_list, [x for x in range(len(column_list))]))
+                self.column_to_index = dict(zip(column_list, [x for x in range(len(column_list))]))
         else:
-            self.__column_to_index = dict(zip(header, [x for x in range((len(header)))]))
+            self.column_to_index = dict(zip(header, [x for x in range((len(header)))]))
 
     def get_column_index(self, column_name):
-        if column_name not in self.__column_to_index.keys():
+        if column_name not in self.column_to_index.keys():
             raise KeyError(column_name + ' key not in column_to_index dict.')
-        return self.__column_to_index[column_name]
+        return self.column_to_index[column_name]
 
     def get_csv_header(self):
-        return self.__column_to_index.keys()
+        return self.column_to_index.keys()
 
     """ Use this method with CSVs that have a well-defined header as the first line.
         Returns each row of the file as a dictionary indexed by the header.

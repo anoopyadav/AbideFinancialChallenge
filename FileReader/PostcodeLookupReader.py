@@ -18,6 +18,7 @@ class PostcodeLookupReader(FileReader):
 
         if region and region is not '':
             self.__postcode_to_region_lookup[outer_postcode] = region
+
             if region not in self.__regions:
                 self.__regions.append(region)
 

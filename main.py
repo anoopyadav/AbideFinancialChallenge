@@ -33,7 +33,6 @@ def parse_args(args):
         elif opt in '-a':
             address_file = arg
 
-    print(postcode_file + prescription_file + address_file)
     if postcode_file is '' or prescription_file is '' or address_file is '':
         print_usage()
         sys.exit(1)
@@ -45,15 +44,12 @@ def main():
     start_time = time()
     postcode_file, address_file, prescription_file = parse_args(sys.argv[1:])
 
-    process_postcodes_file = PostcodeLookupReader(
-        postcode_file, None)
+    process_postcodes_file = PostcodeLookupReader(postcode_file, None)
     process_postcodes_file.populate_csv_header(None)
     process_postcodes_file.set_iteration_method('lazy_read')
 
     for row in process_postcodes_file:
         process_postcodes_file.process_file(row)
-
-    print(process_postcodes_file.get_total_postcodes())
 
     header = ("Period", "practice_code", "practice_name", "practice_building",
               "address", "locality", "town", "postcode")
