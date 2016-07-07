@@ -6,7 +6,8 @@ class PrescriptionFileReader(FileReader):
     def __init__(self, filename, header):
         FileReader.__init__(self, filename, header)
 
-        # Keep track of number of locations and cost of prescriptions
+        """ Keep track of number of locations and cost of prescriptions
+        """
         self.__prescription_location_count = 0
         self.__prescription_total_cost = 0.0
 
@@ -37,9 +38,12 @@ class PrescriptionFileReader(FileReader):
     def process_file(self, row):
         self.__calculate_average_cost(row)
         self.__update_actual_spend_by_post_code(row)
-        self.__update_per_region_data(row)
-        self.__update_cost_per_prescription(row)
-        self.__update_antidepressant_count_by_region(row)
+        if len(self.__average_price_per_region) is not 0:
+            self.__update_per_region_data(row)
+        if len(self.__average_price_per_region) is not 0:
+            self.__update_cost_per_prescription(row)
+        if len(self.__antidepressant_prescription_count_by_region) is not 0:
+            self.__update_antidepressant_count_by_region(row)
 
     """ Q2. Increment the location count and total cost of matching prescription
     """
@@ -105,8 +109,12 @@ class PrescriptionFileReader(FileReader):
             if region not in price_by_region_dict.keys():
                 price_by_region_dict.setdefault(region, 0)
 
-            price_by_region_dict[region] = \
-                round(self.__average_price_per_region[region] / self.__prescription_count_by_region[region], 2)
+            try:
+                price_by_region_dict[region] = \
+                    round(self.__average_price_per_region[region] / self.__prescription_count_by_region[region], 2)
+            except ZeroDivisionError:
+                price_by_region_dict[region] = 0.0
+                print('Price information incomplete for region ' + region + '.')
 
         return price_by_region_dict
 
