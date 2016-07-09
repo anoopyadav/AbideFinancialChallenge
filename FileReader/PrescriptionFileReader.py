@@ -70,7 +70,11 @@ class PrescriptionFileReader(FileReader):
         self.__postcode_lookup_method = lookup_method
 
     def get_top_5_spenders(self):
+        if len(self.__post_codes_by_actual_spend) is 0:
+            return None
+
         top_spenders = []
+
         for i in range(5):
             index = max(self.__post_codes_by_actual_spend, key=self.__post_codes_by_actual_spend.get)
             top_spenders.append((index, round(self.__post_codes_by_actual_spend.pop(index), 2)))

@@ -52,6 +52,18 @@ class Top5SpendersTest(unittest.TestCase):
         self.assertCountEqual(process_prescription_file.get_top_5_spenders(), expected_list)
 
 
+"""class Top5SpendersNotPopulatedTest(unittest.TestCase):
+    def test(self):
+        process_prescription_file = PrescriptionFileReader('samples/prescription_sample.csv', None)
+        process_prescription_file.set_iteration_method('lazy_sequential_read')
+        process_prescription_file.set_postcode_to_region_lookup(MagicMock(return_value=None))
+        process_prescription_file.set_practice_code_to_postcode_lookup(dummy_postcode_lookup_method)
+
+        for row in process_prescription_file:
+            process_prescription_file.process_file(row)
+"""
+
+
 class AveragePriceByRegionTest(unittest.TestCase):
     def test(self):
         process_prescription_file = PrescriptionFileReader('samples/prescription_sample.csv', None)
