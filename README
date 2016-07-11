@@ -31,6 +31,10 @@ In order to map the pharmacies to a region, I needed another dataset, which I ob
 - process_file method is the workhorse. All computations are called from within here.
 - All output formatting is placed in write_output_file.
 
+** ADDITIONAL QUESTION **
+- I chose to figure out the total number of Anti-depressant prescriptions per region in the UK.
+- The antidepressant prescriptions I looked for are outlined here: http://www.nhs.uk/Conditions/Antidepressant-drugs/Pages/Introduction.aspx
+
 ** NOTES **
 - I noticed that the two supplied datasets are from different timeframes, February 2012 for the addresses and September 2011 for the prescriptions.
 - Certain prescriptions (=3269) were not mapped due to this discrepancy. I mapped these to a region "UNKNOWN". However, none of the prescriptions being scanned for fell into this category. So these are not visible in the output.
