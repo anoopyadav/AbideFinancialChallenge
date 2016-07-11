@@ -1,5 +1,5 @@
 import unittest
-from FileReader.FileReader import FileReader
+from FileReader import FileReader
 
 
 class DummyFileReader(FileReader):

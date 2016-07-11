@@ -28,6 +28,9 @@ class FileReader(metaclass=ABCMeta):
 
         self.populate_csv_header(header)
 
+    def get_output_file(self):
+        return self.__output_file
+
     """ Allows iteration over a FileReader object
     """
     def __iter__(self):

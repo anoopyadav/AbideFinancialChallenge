@@ -1,4 +1,4 @@
-from FileReader.FileReader import FileReader
+from FileReader import FileReader
 
 
 class PostcodeLookupReader(FileReader):

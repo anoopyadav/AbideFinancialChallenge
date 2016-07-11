@@ -1,5 +1,6 @@
-from FileReader.FileReader import FileReader
+from FileReader import FileReader
 import re
+import locale
 
 
 class PrescriptionFileReader(FileReader):
@@ -38,8 +39,7 @@ class PrescriptionFileReader(FileReader):
     def process_file(self, row):
         self.__calculate_average_cost(row)
         self.__update_actual_spend_by_post_code(row)
-        if len(self.__average_price_per_region) is not 0:
-            self.__update_per_region_data(row)
+        self.__update_per_region_data(row)
         if len(self.__average_price_per_region) is not 0:
             self.__update_cost_per_prescription(row)
         if len(self.__antidepressant_prescription_count_by_region) is not 0:
@@ -61,6 +61,9 @@ class PrescriptionFileReader(FileReader):
     """ Q3. Populate a dictionary with postcodes as keys and total actual spend as values
     """
     def __update_actual_spend_by_post_code(self, row):
+        if self.__postcode_lookup_method is None:
+            raise ValueError('postcode_lookup_method not set.')
+
         practice_postcode = self.__postcode_lookup_method(row[self.column_to_index['PRACTICE']])
         if practice_postcode is not None:
             self.__post_codes_by_actual_spend.setdefault(practice_postcode, 0.0)
@@ -87,6 +90,8 @@ class PrescriptionFileReader(FileReader):
     def __update_per_region_data(self, row):
         if self.__prescription_regex.search(row[self.column_to_index['BNF NAME']]) is None:
             return
+        if self.__average_price_per_region is None:
+            raise ValueError('average_price_per_region dict not set up.')
 
         postcode = self.__postcode_lookup_method(row[self.column_to_index['PRACTICE']])
         if postcode is not None:
@@ -118,7 +123,6 @@ class PrescriptionFileReader(FileReader):
                     round(self.__average_price_per_region[region] / self.__prescription_count_by_region[region], 2)
             except ZeroDivisionError:
                 price_by_region_dict[region] = 0.0
-                print('Price information incomplete for region ' + region + '.')
 
         return price_by_region_dict
 
@@ -129,11 +133,15 @@ class PrescriptionFileReader(FileReader):
             return
 
         if self.__is_number(row[self.column_to_index['ACT COST']]):
+            if not self.__is_number(row[self.column_to_index['ITEMS']]):
+                return
             self.__cost_per_prescription += \
                 float(row[self.column_to_index['ACT COST']]) / float(row[self.column_to_index['ITEMS']])
             self.__prescription_count += 1
 
     def get_cost_per_prescription(self):
+        if self.__prescription_count is 0:
+            raise ValueError('cost_per_prescription information is not populated')
         return round(self.__cost_per_prescription / self.__prescription_count, 2)
 
     """ Q5. Populate a dictionary with region as key and total prescriptions as value
@@ -154,12 +162,49 @@ class PrescriptionFileReader(FileReader):
 
     """ Utility Method to determine if the supplied string is a float value
     """
-    def __is_number(self, string):
+    @staticmethod
+    def __is_number(string):
         try:
             float(string)
             return True
         except ValueError:
             return False
 
+    """ Utility method to format number as currency
+    """
+    @staticmethod
+    def __format_as_currency(value):
+        currency = "%.2f" % value
+        return currency
+
     def write_output_to_file(self):
-        pass
+        locale.setlocale(locale.LC_ALL, '')
+        f = open(self.get_output_file(), 'a')
+        f.write('Average cost of Peppermint Oil: £' + str(
+            self.__format_as_currency(round(self.get_average_cost_of_prescription(), 2))) + '\n')
+
+        f.write('\nTop 5 postcodes by Actual Spend:\n')
+        for row in self.get_top_5_spenders():
+            f.write('Postcode ' + str(row[0]) + ' spent £' + str("{:,}".format(round(row[1], 2))) + '\n')
+
+        f.write('\nSpending by region per prescription of Flucloxacillin:\n')
+        national_mean = round(self.get_cost_per_prescription(), 2)
+        for key, value in self.get_average_price_by_region().items():
+            f.write('The average cost in the ' + str(key) + ' region was £')
+            f.write(str(self.__format_as_currency(round(value, 2))) + '.')
+            difference = round(national_mean - round(value, 2), 2)
+            f.write(' This was £' + str(self.__format_as_currency(abs(difference))))
+            if difference > 0:
+                f.write(' less than ')
+            else:
+                f.write(' greater than ')
+            f.write('the national mean.\n')
+
+        f.write('\nNational Mean: £' + str(self.__format_as_currency(round(self.get_cost_per_prescription(), 2))) + '\n')
+
+        f.write('\nAntidepressant prescriptions by region:\n')
+        for key, value in self.get_antidepressant_count_by_region().items():
+            f.write('The total number of anti-depressant prescriptions in the ' + str(key) + ' region were ')
+            f.write(str("{:,}".format(value)) + '.\n')
+
+        f.close()

@@ -41,27 +41,41 @@ class Top5SpendersTest(unittest.TestCase):
     def test(self):
         process_prescription_file = PrescriptionFileReader('samples/prescription_sample.csv', None)
         process_prescription_file.set_iteration_method('lazy_sequential_read')
-        process_prescription_file.set_postcode_to_region_lookup(MagicMock(return_value=None))
+        process_prescription_file.set_postcode_to_region_lookup(dummy_postcode_to_region_lookup)
         process_prescription_file.set_practice_code_to_postcode_lookup(dummy_postcode_lookup_method)
+        process_prescription_file.setup_region_based_dictionaries(['LONDON', 'SOUTH EAST', 'SOUTH WEST', 'NORTH WEST'])
 
         for row in process_prescription_file:
             process_prescription_file.process_file(row)
 
-        expected_list = [('XYZ2 ABC', 1181.79), ('XYZ3 ABC', 126.75), ('XYZ6 ABC', 97.11), ('XYZ5 ABC', 34.5),
+        expected_list = [('XYZ2 ABC', 1583.24), ('XYZ3 ABC', 2864.9), ('XYZ6 ABC', 97.11), ('XYZ5 ABC', 34.5),
                          ('XYZ4 ABC', 28.2)]
         self.assertCountEqual(process_prescription_file.get_top_5_spenders(), expected_list)
 
 
-"""class Top5SpendersNotPopulatedTest(unittest.TestCase):
+class Top5SpendersRegionsNotPopulatedTest(unittest.TestCase):
     def test(self):
         process_prescription_file = PrescriptionFileReader('samples/prescription_sample.csv', None)
         process_prescription_file.set_iteration_method('lazy_sequential_read')
         process_prescription_file.set_postcode_to_region_lookup(MagicMock(return_value=None))
-        process_prescription_file.set_practice_code_to_postcode_lookup(dummy_postcode_lookup_method)
+        process_prescription_file.set_practice_code_to_postcode_lookup(None)
 
-        for row in process_prescription_file:
-            process_prescription_file.process_file(row)
-"""
+        with self.assertRaises(ValueError):
+            for row in process_prescription_file:
+                process_prescription_file.process_file(row)
+
+
+class Top5SpendersNothingToProcessTest(unittest.TestCase):
+    def test(self):
+        process_prescription_file = PrescriptionFileReader('samples/prescription_sample.csv', None)
+        process_prescription_file.set_iteration_method('lazy_sequential_read')
+        process_prescription_file.set_postcode_to_region_lookup(MagicMock(return_value=None))
+        process_prescription_file.set_practice_code_to_postcode_lookup(None)
+        process_prescription_file.setup_region_based_dictionaries(['LONDON', 'SOUTH EAST', 'SOUTH WEST', 'NORTH WEST'])
+
+        expected_dict = {'LONDON': 0.0, 'NORTH WEST': 0.0, 'SOUTH WEST': 0.0, 'SOUTH EAST': 0.0}
+
+        self.assertCountEqual(process_prescription_file.get_average_price_by_region(), expected_dict)
 
 
 class AveragePriceByRegionTest(unittest.TestCase):
@@ -77,3 +91,52 @@ class AveragePriceByRegionTest(unittest.TestCase):
 
         self.assertCountEqual(process_prescription_file.get_average_price_by_region(),
                               {'SOUTH EAST': 4.29, 'SOUTH WEST': 7.22, 'LONDON': 3.09, 'NORTH WEST': 4.49})
+
+
+class CostPerPrescriptionTest(unittest.TestCase):
+    def test(self):
+        process_prescription_file = PrescriptionFileReader('samples/prescription_sample.csv', None)
+        process_prescription_file.set_iteration_method('lazy_sequential_read')
+        process_prescription_file.set_postcode_to_region_lookup(dummy_postcode_to_region_lookup)
+        process_prescription_file.set_practice_code_to_postcode_lookup(dummy_postcode_lookup_method)
+        process_prescription_file.setup_region_based_dictionaries(['LONDON', 'SOUTH EAST', 'SOUTH WEST', 'NORTH WEST'])
+
+        for row in process_prescription_file:
+            process_prescription_file.process_file(row)
+
+        self.assertEquals(process_prescription_file.get_cost_per_prescription(), 4.6)
+
+
+class CostPerPrescriptionNotPopulatedTest(unittest.TestCase):
+    def test(self):
+        process_prescription_file = PrescriptionFileReader('samples/prescription_sample.csv', None)
+        process_prescription_file.set_iteration_method('lazy_sequential_read')
+        process_prescription_file.set_postcode_to_region_lookup(None)
+        process_prescription_file.set_practice_code_to_postcode_lookup(None)
+
+        self.assertRaises(ValueError, process_prescription_file.get_cost_per_prescription)
+
+
+class AntidepressantCountPerRegionNotPopulatedTest(unittest.TestCase):
+    def test(self):
+        process_prescription_file = PrescriptionFileReader('samples/prescription_sample.csv', None)
+        process_prescription_file.set_iteration_method('lazy_sequential_read')
+        process_prescription_file.set_postcode_to_region_lookup(None)
+        process_prescription_file.set_practice_code_to_postcode_lookup(None)
+
+        self.assertEquals(process_prescription_file.get_antidepressant_count_by_region(), {})
+
+
+class AntidepressantCountPerRegionTest(unittest.TestCase):
+    def test(self):
+        process_prescription_file = PrescriptionFileReader('samples/prescription_sample.csv', None)
+        process_prescription_file.set_iteration_method('lazy_sequential_read')
+        process_prescription_file.set_postcode_to_region_lookup(dummy_postcode_to_region_lookup)
+        process_prescription_file.set_practice_code_to_postcode_lookup(dummy_postcode_lookup_method)
+        process_prescription_file.setup_region_based_dictionaries(['LONDON', 'SOUTH EAST', 'SOUTH WEST', 'NORTH WEST'])
+
+        for row in process_prescription_file:
+            process_prescription_file.process_file(row)
+
+        expected_list = {'SOUTH EAST': 1, 'SOUTH WEST': 1, 'LONDON': 0, 'NORTH WEST': 0}
+        self.assertCountEqual(process_prescription_file.get_antidepressant_count_by_region(), expected_list)

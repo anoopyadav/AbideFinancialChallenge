@@ -1,4 +1,4 @@
-from FileReader.FileReader import FileReader
+from FileReader import FileReader
 import re
 
 
@@ -52,4 +52,5 @@ class AddressFileReader(FileReader):
         return len(self.__practice_code_to_postcode)
 
     def write_output_to_file(self):
-        pass
+        f = open(self.get_output_file(), 'w')
+        f.write('Number of practices in London: ' + str(self.get_location_count()) + '\n\n')
