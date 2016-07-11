@@ -62,6 +62,8 @@ def main():
     for row in process_address_file:
         process_address_file.process_file(row)
 
+    process_address_file.write_output_to_file()
+
     process_prescription_file = PrescriptionFileReader(prescription_file, None)
     process_prescription_file.set_iteration_method('lazy_sequential_read')
     process_prescription_file.set_practice_code_to_postcode_lookup(process_address_file.get_postcode_for_practice)
@@ -73,10 +75,9 @@ def main():
 
     end_time = time()
 
-    print('Results written to ' + process_prescription_file.get_output_file() + '.\n')
+    print('Results written to ' + process_prescription_file.get_output_file())
     print('Execution time: ' + str(end_time - start_time))
 
-    process_address_file.write_output_to_file()
     process_prescription_file.write_output_to_file()
 
 if __name__ == "__main__":
