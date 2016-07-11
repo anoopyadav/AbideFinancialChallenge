@@ -97,6 +97,10 @@ class PrescriptionFileReader(FileReader):
             return
         if self.__average_price_per_region is None:
             raise ValueError('average_price_per_region dict not set up.')
+        if not self.is_number(row[self.column_to_index['ACT COST']]):
+            return
+        if not self.is_number(row[self.column_to_index['ITEMS']]):
+            return
 
         postcode = self.__postcode_lookup_method(row[self.column_to_index['PRACTICE']])
 
