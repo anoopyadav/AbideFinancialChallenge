@@ -24,6 +24,9 @@ class AddressFileReader(FileReader):
         else:
             self.__count_locations(row)
 
+    """ Look for LONDON in the town field, then the locality field and finally in the address field.
+        This is because certain entries have empty fields.
+    """
     def __count_locations(self, row):
         location_regex = re.compile(r'^' + self.__location_to_search + '\s*$')
 
@@ -36,6 +39,9 @@ class AddressFileReader(FileReader):
                 and location_regex.search(row[self.get_column_index('address')]) is not None:
             self.__location_count += 1
 
+    """ Populate a dictionary with practice_code as key and postcode as values.
+        This will be useful for future lookup.
+    """
     def __populate_practice_code_to_postcode(self, row):
         self.__practice_code_to_postcode[row[self.get_column_index('practice_code')]]\
             = row[self.get_column_index('postcode')]
