@@ -12,3 +12,22 @@ nosetests -v
 
 Note: This requires "nose" to be installed, which can be done using the easy_install script as follows:
 sudo easy_install nose
+
+** ADDITIONAL DATASETS **
+In order to map the pharmacies to a region, I needed another dataset, which I obtained here: https://data.gov.uk/dataset/national-statistics-postcode-lookup-uk
+
+** DESIGN **
+- I went with the Iterator pattern for the Base class, FileReader.
+- It overrides the __iter__ method to perform file iteration.
+- There are 3 different methods to process a file:
+    -- lazy_read uses the csv.DictReader to read a file, one row at a time into a dictionary. Useful for files that contain a header.
+    -- chunky_lazy_read relies on reading a file, 15000 lines at a time and yielding one row at a time.
+    -- lazy_sequential_read reads the file one row at a time.
+    -- The last two methods require the header to be specified explicitely.
+- FileReader is an abstract class, each subclass needs to implement two methods: write_output_file & process_file.
+- process_file method is the workhorse. All computations are called from within here.
+- All output formatting is placed in write_output_file.
+
+** NOTES **
+- I noticed that the two supplied datasets are from different timeframes, February 2012 for the addresses and September 2011 for the prescriptions.
+- Certain prescriptions (=3269) were not mapped due to this discrepancy. I mapped these to a region "UNKNOWN". However, none of the prescriptions being scanned for fell into this category. So these are not visible in the output.

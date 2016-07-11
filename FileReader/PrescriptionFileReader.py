@@ -63,11 +63,16 @@ class PrescriptionFileReader(FileReader):
     def __update_actual_spend_by_post_code(self, row):
         if self.__postcode_lookup_method is None:
             raise ValueError('postcode_lookup_method not set.')
+        if not self.is_number(row[self.column_to_index['ACT COST']]):
+            return
 
         practice_postcode = self.__postcode_lookup_method(row[self.column_to_index['PRACTICE']])
         if practice_postcode is not None:
             self.__post_codes_by_actual_spend.setdefault(practice_postcode, 0.0)
             self.__post_codes_by_actual_spend[practice_postcode] += float(row[self.column_to_index['ACT COST']])
+        else:
+            self.__post_codes_by_actual_spend.setdefault('UNKNOWN', 0.0)
+            self.__post_codes_by_actual_spend['UNKNOWN'] += float(row[self.column_to_index['ACT COST']])
 
     def set_practice_code_to_postcode_lookup(self, lookup_method):
         self.__postcode_lookup_method = lookup_method
@@ -94,13 +99,18 @@ class PrescriptionFileReader(FileReader):
             raise ValueError('average_price_per_region dict not set up.')
 
         postcode = self.__postcode_lookup_method(row[self.column_to_index['PRACTICE']])
+
         if postcode is not None:
             region = self.__region_lookup_method(postcode)
+        else:
+            region = 'UNKNOWN'
+            self.__average_price_per_region.setdefault(region, 0)
+            self.__prescription_count_by_region.setdefault(region, 0)
 
-            self.__average_price_per_region[region] += \
-                float(row[self.column_to_index['ACT COST']]) / float(row[self.column_to_index['ITEMS']])
+        self.__average_price_per_region[region] += \
+            float(row[self.column_to_index['ACT COST']]) / float(row[self.column_to_index['ITEMS']])
 
-            self.__prescription_count_by_region[region] += 1
+        self.__prescription_count_by_region[region] += 1
 
     def set_postcode_to_region_lookup(self, lookup_method):
         self.__region_lookup_method = lookup_method
@@ -190,13 +200,13 @@ class PrescriptionFileReader(FileReader):
         for row in self.get_top_5_spenders():
             f.write('Postcode ' + str(row[0]) + ' spent £' + self.format_as_currency((round(row[1], 2))) + '\n')
 
-        f.write('\nSpending by region per prescription of Flucloxacillin:\n')
+        f.write('\nSpending per prescription of Flucloxacillin by region:\n')
         national_mean = round(self.get_cost_per_prescription(), 2)
         for key, value in self.get_average_price_by_region().items():
             f.write('The average cost in the ' + str(key) + ' region was £')
-            f.write(str(self.format_as_currency(round(value, 2))) + '.')
+            f.write(str(self.format_as_currency(round(value, 2))) + ';')
             difference = round(national_mean - round(value, 2), 2)
-            f.write(' This was £' + str(self.format_as_currency(abs(difference))))
+            f.write(' this was £' + str(self.format_as_currency(abs(difference))))
             if difference > 0:
                 f.write(' less than ')
             else:

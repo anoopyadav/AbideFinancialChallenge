@@ -43,6 +43,7 @@ class AddressFileReader(FileReader):
     def get_postcode_for_practice(self, practice_code):
         if len(self.__practice_code_to_postcode) == 0:
             raise ValueError('practice_code_to_postcode dictionary is not initialised!')
+
         return self.__practice_code_to_postcode.get(practice_code, None)
 
     def get_location_count(self):

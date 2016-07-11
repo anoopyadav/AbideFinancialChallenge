@@ -4,7 +4,7 @@ from FileReader.PrescriptionFileReader import PrescriptionFileReader
 
 
 def dummy_postcode_lookup_method(practice_code):
-    practice_code_to_postcode = {'A86001': 'XYZ1 ABC', 'A86003': 'XYZ2 ABC', 'A86004': 'XYZ3 ABC',
+    practice_code_to_postcode = {'A86001': 'XYZ1 ABC', 'A86003': 'XYZ2 ABC', 'A86004': 'XYZ3 ABC', 'Y00516': None,
                                  'A86006': 'XYZ4 ABC', 'A86007': 'XYZ5 ABC', 'A86008': 'XYZ6 ABC', 'PRACTICE': None}
     return practice_code_to_postcode[practice_code]
 
@@ -43,13 +43,14 @@ class Top5SpendersTest(unittest.TestCase):
         process_prescription_file.set_iteration_method('lazy_sequential_read')
         process_prescription_file.set_postcode_to_region_lookup(dummy_postcode_to_region_lookup)
         process_prescription_file.set_practice_code_to_postcode_lookup(dummy_postcode_lookup_method)
-        process_prescription_file.setup_region_based_dictionaries(['LONDON', 'SOUTH EAST', 'SOUTH WEST', 'NORTH WEST'])
+        process_prescription_file.setup_region_based_dictionaries(['LONDON', 'SOUTH EAST', 'SOUTH WEST', 'NORTH WEST',
+                                                                   'UNKNOWN'])
 
         for row in process_prescription_file:
             process_prescription_file.process_file(row)
 
         expected_list = [('XYZ2 ABC', 1583.24), ('XYZ3 ABC', 2864.9), ('XYZ6 ABC', 97.11), ('XYZ5 ABC', 34.5),
-                         ('XYZ4 ABC', 28.2)]
+                         ('UNKNOWN', 29.02)]
         self.assertCountEqual(process_prescription_file.get_top_5_spenders(), expected_list)
 
 
