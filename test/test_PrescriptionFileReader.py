@@ -140,3 +140,23 @@ class AntidepressantCountPerRegionTest(unittest.TestCase):
 
         expected_list = {'SOUTH EAST': 1, 'SOUTH WEST': 1, 'LONDON': 0, 'NORTH WEST': 0}
         self.assertCountEqual(process_prescription_file.get_antidepressant_count_by_region(), expected_list)
+
+
+class FormatAsCurrencyPassTest(unittest.TestCase):
+    def test(self):
+        self.assertEquals(PrescriptionFileReader.format_as_currency(1234.5), '1,234.50')
+
+
+class FormatAsCurrencyFailTest(unittest.TestCase):
+    def test(self):
+        self.assertRaises(ValueError, PrescriptionFileReader.format_as_currency, 'One')
+
+
+class IsNumberPassTest(unittest.TestCase):
+    def test(self):
+        self.assertEquals(PrescriptionFileReader.is_number('123.4'), True)
+
+
+class IsNumberFailTest(unittest.TestCase):
+    def test(self):
+        self.assertEquals(PrescriptionFileReader.is_number('Two'), False)

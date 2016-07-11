@@ -132,8 +132,8 @@ class PrescriptionFileReader(FileReader):
         if self.__prescription_regex.search(row[self.column_to_index['BNF NAME']]) is None:
             return
 
-        if self.__is_number(row[self.column_to_index['ACT COST']]):
-            if not self.__is_number(row[self.column_to_index['ITEMS']]):
+        if self.is_number(row[self.column_to_index['ACT COST']]):
+            if not self.is_number(row[self.column_to_index['ITEMS']]):
                 return
             self.__cost_per_prescription += \
                 float(row[self.column_to_index['ACT COST']]) / float(row[self.column_to_index['ITEMS']])
@@ -163,7 +163,7 @@ class PrescriptionFileReader(FileReader):
     """ Utility Method to determine if the supplied string is a float value
     """
     @staticmethod
-    def __is_number(string):
+    def is_number(string):
         try:
             float(string)
             return True
@@ -173,34 +173,37 @@ class PrescriptionFileReader(FileReader):
     """ Utility method to format number as currency
     """
     @staticmethod
-    def __format_as_currency(value):
-        currency = "%.2f" % value
+    def format_as_currency(value):
+        if not PrescriptionFileReader.is_number(value):
+            raise ValueError('Supplied currency value is not a number.'
+                             '')
+        currency = "{:,.2f}".format(value)
         return currency
 
     def write_output_to_file(self):
         locale.setlocale(locale.LC_ALL, '')
         f = open(self.get_output_file(), 'a')
         f.write('Average cost of Peppermint Oil: £' + str(
-            self.__format_as_currency(round(self.get_average_cost_of_prescription(), 2))) + '\n')
+            self.format_as_currency(round(self.get_average_cost_of_prescription(), 2))) + '\n')
 
         f.write('\nTop 5 postcodes by Actual Spend:\n')
         for row in self.get_top_5_spenders():
-            f.write('Postcode ' + str(row[0]) + ' spent £' + str("{:,}".format(round(row[1], 2))) + '\n')
+            f.write('Postcode ' + str(row[0]) + ' spent £' + self.format_as_currency((round(row[1], 2))) + '\n')
 
         f.write('\nSpending by region per prescription of Flucloxacillin:\n')
         national_mean = round(self.get_cost_per_prescription(), 2)
         for key, value in self.get_average_price_by_region().items():
             f.write('The average cost in the ' + str(key) + ' region was £')
-            f.write(str(self.__format_as_currency(round(value, 2))) + '.')
+            f.write(str(self.format_as_currency(round(value, 2))) + '.')
             difference = round(national_mean - round(value, 2), 2)
-            f.write(' This was £' + str(self.__format_as_currency(abs(difference))))
+            f.write(' This was £' + str(self.format_as_currency(abs(difference))))
             if difference > 0:
                 f.write(' less than ')
             else:
                 f.write(' greater than ')
             f.write('the national mean.\n')
 
-        f.write('\nNational Mean: £' + str(self.__format_as_currency(round(self.get_cost_per_prescription(), 2))) + '\n')
+        f.write('\nNational Mean: £' + str(self.format_as_currency(round(self.get_cost_per_prescription(), 2))) + '\n')
 
         f.write('\nAntidepressant prescriptions by region:\n')
         for key, value in self.get_antidepressant_count_by_region().items():
